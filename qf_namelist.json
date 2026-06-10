@@ -1,0 +1,39 @@
+{
+    "simulation" : {
+        "title" : "FireFlux II",
+        "saveLocation": "/Users/aaronmccutchan/fireflux/ff2_qf_sample_test",
+        "duration" : 300,
+        "saveOutputVariables" : ["Winds", "Energy"],
+        "saveOutputFrequency" : 15,
+
+        "nProc" : 1
+    },
+    
+    "domain" : {
+        "gis" : "fireflux_domain_and_instruments.geojson",
+        "gisProjection" : "EPSG:4326",
+
+        "horizontalGridSize" : 2,
+        "verticalGridSize" : 1
+    }, 
+    
+    "fuels" : {
+        "apiKey" : "", 
+        "surfaceConfig" : {
+            "fuelMoisture" : {
+                "source" : "uniform",
+                "value" : 0.085
+            }
+        }
+    },
+    "weather" : {
+        "windSpeed": 8.5,
+        "windDirection": 315
+    },
+    "ignition" : {
+        "mode" : "gis",
+        "timing" : "instant",
+        "startTime" : 1,
+        "width" : 10
+    }
+}

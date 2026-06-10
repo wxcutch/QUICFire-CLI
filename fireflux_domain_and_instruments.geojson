@@ -1,0 +1,137 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -95.041422,
+                    29.387975
+                ]
+            },
+            "properties": {
+                "name": "MainTower",
+                "Comment": "42m",
+                "UTM_X": 301890.749378,
+                "UTM_Y": 3252703.52426
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "BurnUnit"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                        [
+                            -95.038852,
+                            29.389166
+                        ],
+                        [
+                            -95.041776,
+                            29.389152
+                        ],
+                        [
+                            -95.042809,
+                            29.38953
+                        ],
+                        [
+                            -95.042794,
+                            29.382143
+                        ],
+                        [
+                            -95.038897,
+                            29.382153
+                        ],
+                        [
+                            -95.038852,
+                            29.389166
+                        ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -95.040301,
+                    29.384776
+                ]
+            },
+            "properties": {
+                "name": "SouthTower",
+                "Comment": "10m",
+                "UTM_X": 301993.442331,
+                "UTM_Y": 3252347.06291
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -95.041386,
+                    29.386171
+                ]
+            },
+            "properties": {
+                "name": "WestTower",
+                "Comment": "10m",
+                "UTM_X": 301890.792877,
+                "UTM_Y": 3252503.5243
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -95.040211,
+                    29.38651
+                ]
+            },
+            "properties": {
+                "name": "EastTower",
+                "Comment": "10m",
+                "UTM_X": 302005.464591,
+                "UTM_Y": 3252539.04241
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "LiDAR"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -95.042817,
+                    29.389542
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Ignition",
+                "thickness":10
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -95.042528,
+                        29.387995
+                    ],
+                    [
+                        -95.041547,
+                        29.38905
+                    ]
+                ]
+            }
+        }
+    ]
+}
