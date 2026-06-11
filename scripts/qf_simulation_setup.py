@@ -32,14 +32,8 @@ default_vars = {'simulation' : {
 
 required_namelist_sections = ['simulation', 'domain', 'fuels', 'weather', 'ignition']
 
-def main():
-    options = sys.argv[1:]
-    if(len(options) != 1):
-        print("ERROR: Please specify the simulation json namelist after the command") 
-        return
-    
-    with open(options[0], 'r') as raw_namelist:
-        namelist = json.load(raw_namelist)
+def _main():
+    namelist = load_cli_namelist()
     
     namelist = check_namelist_requirements_and_fill_defaults(namelist)
     if(namelist == None):
@@ -52,6 +46,18 @@ def main():
     write_ignition(namelist)
     write_qf_inputs(namelist)
     print("simulation setup complete!")
+
+def load_cli_namelist():
+    options = sys.argv[1:]
+    if(len(options) != 1):
+        print("ERROR: Please specify the simulation json namelist after the command") 
+        exit()
+
+    with open(options[0], 'r') as raw_namelist:
+        namelist = json.load(raw_namelist)
+
+    namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
+    return namelist
 
 def create_fuels(namelist):
     ff.api.set_api_key(namelist['fuels']['apiKey'])
@@ -100,7 +106,6 @@ def write_qf_inputs(namelist):
                                                         simulation_time=namelist['simulation']['duration'])
     simulation.set_output_files(**namelist['simulation']['outputs'])
     simulation.set_custom_simulation()
-    # simulation.set_rectangle_ignition(20, 100, 100, 10)
     simulation.runtime_advanced_user_inputs.num_cpus = namelist['simulation']['nProc']
     simulation.set_output_interval(namelist['simulation']['saveOutputFrequency'])
     simulation.write_inputs(namelist['simulation']['saveLocation'])
@@ -287,4 +292,4 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
     return ignitions, timing
 
 if __name__ == "__main__":
-    main()
+    _main()
