@@ -11,7 +11,7 @@ import struct
 import math
 
 required_vars = {'simulation': ['saveLocation', 'duration'],
-                 'domain' : ["gis", "gisProjection"],
+                 'domain' : ["gis"],
                  'fuels' : ['apiKey'],
                  'weather' : ['windSpeed', 'windDirection'], 
                  }
@@ -34,8 +34,6 @@ required_namelist_sections = ['simulation', 'domain', 'fuels', 'weather', 'ignit
 
 def _main():
     namelist = load_cli_namelist()
-    
-    namelist = check_namelist_requirements_and_fill_defaults(namelist)
     if(namelist == None):
         exit()
 
@@ -57,6 +55,8 @@ def load_cli_namelist():
         namelist = json.load(raw_namelist)
 
     namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
+    
+    namelist = check_namelist_requirements_and_fill_defaults(namelist)
     return namelist
 
 def create_fuels(namelist):
@@ -67,8 +67,11 @@ def create_fuels(namelist):
     burn_unit = next(
         feature for feature in gis_info['features'] if (str.lower(feature['properties']['name']) == "burnunit" or str.lower(feature['properties']['name']) == "burn_unit")
     )
-
-    polygon = sp.Polygon(burn_unit['geometry']['coordinates'])
+    
+    try:
+        polygon = sp.Polygon(burn_unit['geometry']['coordinates'])
+    except TypeError:
+        polygon = sp.Polygon(burn_unit['geometry']['coordinates'][0])
     roi = gpd.GeoDataFrame(geometry=[polygon], crs=namelist['domain']['gisProjection'])
 
     available_fuels_options = namelist['fuels'].keys()
@@ -168,7 +171,7 @@ def check_namelist_requirements_and_fill_defaults(namelist):
                 final_namelist[section][varname] = default_vars[section][varname]
                 print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
     
-    final_namelist['simulation']['outputs'] = _handle_output_vars(namelist['simulation']['saveOutputVariables'])
+    final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
     return final_namelist
 
 def _write_ignition_file(locations, timing, save_loc):
@@ -218,7 +221,6 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
     def _diagonal_line_ignition(existing_ignition_pattern, start_x, start_y, end_x, end_y, thickness=1):
         print('Running diagonal line ignition')
         ignition_pattern = np.copy(existing_ignition_pattern)
-        print(ignition_pattern.shape)
 
         dx = end_x - start_x
         dy = end_y - start_y

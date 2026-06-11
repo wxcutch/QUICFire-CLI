@@ -1,8 +1,6 @@
-#!/bin/zsh
-echo "-------------------------------------------------------"
-echo " QUIC-Fire Based POD Boundary Assessor v0.0 - May 2026"
-echo "-------------------------------------------------------"
-
+echo "------------------------------------------"
+echo "QUIC-Fire CLI Dependency Checker"
+echo "------------------------------------------"
 export TEST_ENVIRONMENT_NAME=$1
 export CONDA=$(which conda)
 
@@ -18,32 +16,28 @@ if [[ -n $TEST_ENVIRONMENT_NAME ]]; then
 
     export PYTHON="$CONDA_ENVS/envs/$TEST_ENVIRONMENT_NAME/bin/python"
     if [[ ! -e $PYTHON ]]; then
-        echo "ERROR: couldn't find environment $TEST_ENVIRONMENT_NAME \n"
+        echo "ERROR: couldn't find environment $TEST_ENVIRONMENT_NAME"
         exit
     else
-        echo "Found the environment\n"
+        echo "Found the environment"
     fi
 else
-    echo 'Checking current environment          (hint: put conda environment name after script to test a specific conda environment)\n'
+    echo 'Checking current environment'
+    echo '(hint: put conda environment name after script to test a specific conda environment)'
     export PYTHON=$(which python)
 fi
 
 if [[ ! -e $PYTHON ]]; then 
-    echo "ERROR: located python was not an executable ($PYTHON)\n"
+    echo "ERROR: located python was not an executable ($PYTHON)"
     exit
 else
-    echo "Python found! ($PYTHON)\n"
+    echo "Python found! ($PYTHON)"
 fi
 
+echo "------------------------------------------"
 echo " Testing for required modules"
-echo "------------------------------"
+echo "------------------------------------------"
 
 while read -r line; do
-    # throw in a dummy API key so the test doesn't crash if the user hasn't set it yet
-    # shouldn't overwrite the key if the user already set it
-    if [[ $line == "fastfuels_sdk" ]]; then
-        export FASTFUELS_API_KEY="1"
-    fi
     $PYTHON -c "import $line" && echo "Found $line"
-    echo "\n"
-done < requirements.txt
+done < resources/requirements.txt
