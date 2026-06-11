@@ -1,0 +1,17 @@
+{
+    "simulation" : {
+        "saveLocation": "/simulation_directory",
+        "duration" : 300
+    },
+    "domain" : {
+        "gis" : "/barebones_domain.geojson"
+    }, 
+    "fuels" : {
+        "apiKey" : ""
+    },
+    "weather" : {
+        "windSpeed": 8.5,
+        "windDirection": 315
+    }, 
+    "ignition" : {}
+}
