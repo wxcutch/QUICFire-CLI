@@ -1,0 +1,30 @@
+simulation:
+  title: FireFlux II
+  saveLocation: /simulation_directory
+  duration: 300
+  saveOutputVariables: [Winds, Energy]
+  saveOutputFrequency: 15
+  nProc: 1
+
+domain:
+  gis: barebones_domain.geojson
+  gisProjection: EPSG:4326
+  horizontalGridSize: 2
+  verticalGridSize: 1
+
+fuels: 
+  apiKey: 1
+  surfaceConfig:
+    fuelMoisture:
+      source: uniform 
+      value: 8.5
+
+weather: 
+  windSpeed: 8.5
+  windDirection: 315
+
+ignition:
+  mode: gis
+  timing: instant
+  startTime: 1
+  width: 10

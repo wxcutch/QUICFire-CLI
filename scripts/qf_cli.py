@@ -1,4 +1,5 @@
 import json
+import yaml
 import fastfuels_sdk as ff
 import quicfire_tools as qft
 from pathlib import Path
@@ -11,6 +12,7 @@ required_vars = {'simulation': ['saveLocation', 'duration'],
                  'domain' : ["gis"],
                  'fuels' : ['apiKey'],
                  'weather' : ['windSpeed', 'windDirection'], 
+                 'ignition' : ['mode']
                  }
 
 default_vars = {'simulation' : {
@@ -98,11 +100,11 @@ def check_namelist_requirements_and_fill_defaults(namelist):
 def load_cli_namelist():
     options = sys.argv[1:]
     if(len(options) != 1):
-        print("ERROR: Please specify the simulation json namelist after the command") 
+        print("ERROR: Please specify the simulation yaml namelist after the command") 
         exit()
 
     with open(options[0], 'r') as raw_namelist:
-        namelist = json.load(raw_namelist)
+        namelist = yaml.load(raw_namelist)
 
     namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
     
