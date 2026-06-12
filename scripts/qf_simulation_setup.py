@@ -9,6 +9,7 @@ import copy
 import numpy as np
 import struct
 import math
+from qf_cli import *
 
 required_vars = {'simulation': ['saveLocation', 'duration'],
                  'domain' : ["gis"],
@@ -45,19 +46,19 @@ def _main():
     write_qf_inputs(namelist)
     print("simulation setup complete!")
 
-def load_cli_namelist():
-    options = sys.argv[1:]
-    if(len(options) != 1):
-        print("ERROR: Please specify the simulation json namelist after the command") 
-        exit()
+# def load_cli_namelist():
+#     options = sys.argv[1:]
+#     if(len(options) != 1):
+#         print("ERROR: Please specify the simulation json namelist after the command") 
+#         exit()
 
-    with open(options[0], 'r') as raw_namelist:
-        namelist = json.load(raw_namelist)
+#     with open(options[0], 'r') as raw_namelist:
+#         namelist = json.load(raw_namelist)
 
-    namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
+#     namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
     
-    namelist = check_namelist_requirements_and_fill_defaults(namelist)
-    return namelist
+#     namelist = check_namelist_requirements_and_fill_defaults(namelist)
+#     return namelist
 
 def create_fuels(namelist):
     ff.api.set_api_key(namelist['fuels']['apiKey'])
@@ -67,7 +68,7 @@ def create_fuels(namelist):
     burn_unit = next(
         feature for feature in gis_info['features'] if (str.lower(feature['properties']['name']) == "burnunit" or str.lower(feature['properties']['name']) == "burn_unit")
     )
-    
+
     try:
         polygon = sp.Polygon(burn_unit['geometry']['coordinates'])
     except TypeError:
@@ -75,7 +76,7 @@ def create_fuels(namelist):
     roi = gpd.GeoDataFrame(geometry=[polygon], crs=namelist['domain']['gisProjection'])
 
     available_fuels_options = namelist['fuels'].keys()
-    print(namelist['fuels'])
+    
     ff.export_roi(roi = roi, export_path = namelist['simulation']['saveLocation'] / 'qf_fastfuels.zip', verbose=True, export_format="QUIC-Fire",
                     topography_config= None if "topographyConfig" not in available_fuels_options else namelist['fuels']['topographyConfig'],
                     surface_config= None if "surfaceConfig" not in available_fuels_options else namelist['fuels']['surfaceConfig'],
@@ -94,10 +95,10 @@ def write_ignition(namelist):
     else:
         print("ERROR: only supported ignition specification is a LineString in your .geojson file defining your domain. Your ignite.dat file will be missing")
 
-def get_nx_ny_nz(namelist):
-    with open(namelist['simulation']['saveLocation'] / 'metadata.json') as raw_meta:
-        ff_meta = json.load(raw_meta)
-    return ff_meta['nx'], ff_meta['ny'], ff_meta['nz']
+# def get_nx_ny_nz(namelist):
+#     with open(namelist['simulation']['saveLocation'] / 'metadata.json') as raw_meta:
+#         ff_meta = json.load(raw_meta)
+#     return ff_meta['nx'], ff_meta['ny'], ff_meta['nz']
 
 def write_qf_inputs(namelist):
     #figure out the size of the grid based on the domain GIS
@@ -109,70 +110,79 @@ def write_qf_inputs(namelist):
                                                         simulation_time=namelist['simulation']['duration'])
     simulation.set_output_files(**namelist['simulation']['outputs'])
     simulation.set_custom_simulation()
+    _set_atmos_grid_height(namelist, simulation)
     simulation.runtime_advanced_user_inputs.num_cpus = namelist['simulation']['nProc']
     simulation.set_output_interval(namelist['simulation']['saveOutputFrequency'])
     simulation.write_inputs(namelist['simulation']['saveLocation'])
-     
-def check_namelist_requirements_and_fill_defaults(namelist):
-    global required_vars, required_namelist_sections, default_vars
 
-    def _handle_output_vars(varlist):
-        #handle output variables
-        qf_outputs = {
-                    'eng_to_atm':False, 
-                    'react_rate':False,
-                    'fuel_dens':False,
-                    'qf_wind':False,
-                    'qu_wind_inst':False,
-                    'qu_wind_avg':False,
-                    'fuel_moist':False,
-                    'mass_burnt':False,
-                    'emissions':False,
-                    'radiation':False,
-                    'surf_eng':False
-                    }
-        
-        for requested_output_var in varlist:
-            if(requested_output_var in qf_outputs.keys()):
-                qf_outputs[requested_output_var] = True
-            elif(requested_output_var != 'Winds' and requested_output_var != "Energy"):
-                print(f"WARNING: Did not recognize requested output variable {requested_output_var}")
-        
-        if('Winds' in varlist):
-            qf_outputs['qu_wind_avg'] = True
-        if("Energy" in varlist):
-            qf_outputs['surf_eng'] = True
-            qf_outputs['eng_to_atm'] = True
-            qf_outputs['radiation'] = True 
-
-        return qf_outputs
+def _set_atmos_grid_height(namelist, simulation):
+    #check to see if the user went ahead and specified 
+    if('atmosDepth' in namelist['simulation'].keys()):
+        simulation.qu_simparams.quic_domain_height = namelist['simulation']['atmosDepth']
+        return
     
-    final_namelist = copy.deepcopy(namelist)
+    print('Automatically determining atmosphere domain height (manually set using simulation/atmosDepth)')
+    # topo_grid = #TODO: handle the grid depth automatically
+# def check_namelist_requirements_and_fill_defaults(namelist):
+#     global required_vars, required_namelist_sections, default_vars
 
-    for required_section in required_namelist_sections:
-        if(required_section not in namelist.keys()):
-            print(f"ERROR: Missing required namelist section {required_section}")
-            final_namelist = None
+#     def _handle_output_vars(varlist):
+#         #handle output variables
+#         qf_outputs = {
+#                     'eng_to_atm':False, 
+#                     'react_rate':False,
+#                     'fuel_dens':False,
+#                     'qf_wind':False,
+#                     'qu_wind_inst':False,
+#                     'qu_wind_avg':False,
+#                     'fuel_moist':False,
+#                     'mass_burnt':False,
+#                     'emissions':False,
+#                     'radiation':False,
+#                     'surf_eng':False
+#                     }
         
-    for section_with_req in required_vars.keys():
-        for req_var in required_vars[section_with_req]:
-            if (req_var not in namelist[section_with_req].keys()):
-                print(f"ERROR: missing required variable {req_var} in section {section_with_req} of the namelist")
-                final_namelist = None
+#         for requested_output_var in varlist:
+#             if(requested_output_var in qf_outputs.keys()):
+#                 qf_outputs[requested_output_var] = True
+#             elif(requested_output_var != 'Winds' and requested_output_var != "Energy"):
+#                 print(f"WARNING: Did not recognize requested output variable {requested_output_var}")
+        
+#         if('Winds' in varlist):
+#             qf_outputs['qu_wind_avg'] = True
+#         if("Energy" in varlist):
+#             qf_outputs['surf_eng'] = True
+#             qf_outputs['eng_to_atm'] = True
+#             qf_outputs['radiation'] = True 
 
-    if (final_namelist == None):
-        return None
-
-    final_namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
-
-    for section in default_vars.keys():
-        for varname in default_vars[section].keys():
-            if(varname not in namelist[section].keys()):
-                final_namelist[section][varname] = default_vars[section][varname]
-                print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
+#         return qf_outputs
     
-    final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
-    return final_namelist
+#     final_namelist = copy.deepcopy(namelist)
+
+#     for required_section in required_namelist_sections:
+#         if(required_section not in namelist.keys()):
+#             print(f"ERROR: Missing required namelist section {required_section}")
+#             final_namelist = None
+        
+#     for section_with_req in required_vars.keys():
+#         for req_var in required_vars[section_with_req]:
+#             if (req_var not in namelist[section_with_req].keys()):
+#                 print(f"ERROR: missing required variable {req_var} in section {section_with_req} of the namelist")
+#                 final_namelist = None
+
+#     if (final_namelist == None):
+#         return None
+
+#     final_namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
+
+#     for section in default_vars.keys():
+#         for varname in default_vars[section].keys():
+#             if(varname not in namelist[section].keys()):
+#                 final_namelist[section][varname] = default_vars[section][varname]
+#                 print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
+    
+#     final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
+#     return final_namelist
 
 def _write_ignition_file(locations, timing, save_loc):
     ignition_locations = np.where(locations)

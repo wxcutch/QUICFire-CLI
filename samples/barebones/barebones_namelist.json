@@ -1,7 +1,8 @@
 {
     "simulation" : {
         "saveLocation": "/simulation_directory",
-        "duration" : 300
+        "duration" : 300, 
+        "atmosDepth" : 2000
     },
     "domain" : {
         "gis" : "/barebones_domain.geojson"
