@@ -7,22 +7,6 @@ See `scripts` for description of functionalities
 All of the sections are required to be present in your namelist and variables/modes of the sections are described below. Namelists are formatted in <code>yaml</code>. See `samples` for working examples of namelist-geojson pairs. 
 
 <div> 
-<!-- <style>
-summary {font-size: large;}
-code {font-weight: normal;}
-pre {font-size: small; margin-right: 5px; padding:2px;}
-.popout {border-radius: 5px;
-         border-style: solid;
-         border-width: 1px;
-         padding: 5px;
-         padding-left: 10px;
-         padding-right: 10px;
-         margin: 5px;}
-.subsection { background-color: rgba(0, 127, 0, 0.4); }
-.warning { background-color: rgba(195, 64, 0); }
-.tip { background-color: rgba(0, 127, 192); }
-.section-title {font-weight: bold; font-size: larger;}
-</style> -->
 
 <details class="popout subsection">
 <summary><code>simulation</code></summary>
@@ -35,7 +19,7 @@ pre {font-size: small; margin-right: 5px; padding:2px;}
 <ul>
 <li><code>duration (sec)</code> - How long you would like the simulation to run for. If you want to ensure the burn totally completes, set for longer than you think necessary and the model will shut itself off when the fire is out.</li>
 <li><code>title</code> - the name you would like to assign to the simulation</li>
-<li><code>saveOutputVariables</code> - <code>default: ["Winds", "Energy"]</code> Names of the variables you would like the simulation to save. See the QUIC-Fire documentation for details. <code>Winds</code> is shorthand give you all of the QUIC grid averaged winds. <code>Energy</code> will give you surface energy, energy to atmosphere, and radiation products.</li>
+<li><code>saveOutputVariables</code> - <code>default: ["Winds", "Energy"]</code> Names of the variables you would like the simulation to save. See the QUIC-Fire documentation for details. <code>Winds</code> is shorthand give you all of the QUIC grid averaged winds. <code>Energy</code> will give you surface energy, energy to atmosphere, and radiation products. See <a href="https://silvxlabs.github.io/quicfire-tools/reference/#quicfire_tools.inputs.SimulationInputs.set_output_files">quicfire-tools documentation</a> for variable list and description.</li>
 <li><code>saveOutputFrequency (sec)</code> - <code>default: 300</code> How frequently you would like the simulation variables to be saved.</li>
 <li><code>nProc</code> - <code>default: 1</code> The number of processors to run the simulation on.</li>
 </ul>

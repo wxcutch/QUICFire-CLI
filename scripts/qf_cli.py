@@ -104,7 +104,7 @@ def load_cli_namelist():
         exit()
 
     with open(options[0], 'r') as raw_namelist:
-        namelist = yaml.load(raw_namelist)
+        namelist = yaml.load(raw_namelist, Loader=yaml.FullLoader)
 
     namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
     
