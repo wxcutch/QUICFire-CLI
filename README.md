@@ -6,6 +6,7 @@ See `scripts` for description of functionalities
 # Namelist Info
 All of the sections are required to be present in your namelist and variables/modes of the sections are described below. Namelists are formatted in <code>yaml</code>. See `samples` for working examples of namelist-geojson pairs. 
 
+<div> 
 <style>
 summary {font-size: large;}
 code {font-weight: normal;}
@@ -126,3 +127,4 @@ Finds a <code>name = ignition</code> LineString within your GeoJSON file describ
 </ul>
 </details>
 </details>
+</div>
