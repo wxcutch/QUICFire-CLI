@@ -93,11 +93,11 @@ surfaceConfig:
 </div>
 <aside class="popout warning"><b>Warning:</b> The FastFuels SDK documentation (as of June 2026) erroneously states to set the fuel moisture using a fraction to represent the percentage. You should use the percentage out of 100 instead. </aside>
 </details>
+
 </details>
 
 <hr/>
 <details class="popout subsection">
-<hr/>
 <summary><code>weather</code></summary>
 </hr>
 Describe the background wind conditions for your simulation. As of right now, only a single point definition is supported, and the observation is assumed to come from a 20' RAWS station before being used by the QUIC-Fire preprocessor.
