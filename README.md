@@ -7,7 +7,7 @@ See `scripts` for description of functionalities
 All of the sections are required to be present in your namelist and variables/modes of the sections are described below. Namelists are formatted in <code>yaml</code>. See `samples` for working examples of namelist-geojson pairs. 
 
 <div> 
-<style>
+<!-- <style>
 summary {font-size: large;}
 code {font-weight: normal;}
 pre {font-size: small; margin-right: 5px; padding:2px;}
@@ -22,7 +22,7 @@ pre {font-size: small; margin-right: 5px; padding:2px;}
 .warning { background-color: rgba(195, 64, 0); }
 .tip { background-color: rgba(0, 127, 192); }
 .section-title {font-weight: bold; font-size: larger;}
-</style>
+</style> -->
 
 <details class="popout subsection">
 <summary><code>simulation</code></summary>
