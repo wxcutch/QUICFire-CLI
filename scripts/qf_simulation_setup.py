@@ -76,11 +76,10 @@ def write_qf_inputs(namelist):
 
 def _set_atmos_grid_height(namelist, simulation):
     #check to see if the user went ahead and specified 
-    if('atmosDepth' in namelist['simulation'].keys()):
-        simulation.qu_simparams.quic_domain_height = namelist['simulation']['atmosDepth']
+    if('atmosDepth' in namelist['domain'].keys()):
+        simulation.qu_simparams.quic_domain_height = namelist['domain']['atmosDepth']
         return
     
-    print('Automatically determining atmosphere domain height (manually set using simulation/atmosDepth)')
     topo_grid = get_grid_from_raw_dat(namelist, 'topo.dat')
     highest_point = np.nanmax(topo_grid)
     lowest_point = np.nanmin(topo_grid)
@@ -89,6 +88,8 @@ def _set_atmos_grid_height(namelist, simulation):
     if(change > 50):
         print(f"Big terrain height difference, changing the atmosphere domain height to {change * 3.25}")
         simulation.qu_simparams.quic_domain_height = change * 3.25
+    else:
+        print("Using quicfire-tools default vertical grid")
 
 def _write_ignition_file(locations, timing, save_loc):
     ignition_locations = np.where(locations)

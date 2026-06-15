@@ -1,7 +1,5 @@
-import json
 from pathlib import Path
 import numpy as np
-import struct
 import matplotlib.pyplot as plt
 from qf_cli import *
 

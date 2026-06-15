@@ -40,6 +40,7 @@ Gives information about the grid setup for the model
 <li><code>horizontalGridSize (m)</code> - <code>default 2</code> The size of the square grid cells in the xy plane </li>
 <li><code>verticalGridSize (m)</code> - <code>default 1</code> The size of the fire cells grid in the vertical</li>
 <li><code>gisProjection</code> - <code>default "EPSG:4326"</code> The projection the GeoJSON file outlining the domain is in</li>
+<li><code>atmosDepth (m)</code> - Default is quicfire-tools default or 3.25 times the difference in terrain height if the span of the terrain height values is greater than 50m.
 </ul>
 </details>
 
