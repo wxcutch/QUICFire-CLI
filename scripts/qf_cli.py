@@ -7,6 +7,7 @@ import sys, os
 import copy
 import struct
 import numpy as np
+import matplotlib.pyplot as plt
 
 required_vars = {'simulation': ['saveLocation', 'duration'],
                  'domain' : ["gis"],
@@ -105,8 +106,6 @@ def load_cli_namelist():
 
     with open(options[0], 'r') as raw_namelist:
         namelist = yaml.load(raw_namelist, Loader=yaml.FullLoader)
-
-    namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
     
     namelist = check_namelist_requirements_and_fill_defaults(namelist)
     return namelist
@@ -119,6 +118,25 @@ def all_ff_present(folder):
             all_ff_present = False
             print(f"WARNING: {file} is missing from your input files at {folder}")
     return all_ff_present    
+
+def plot_field(namelist, field, vmin=None, vmax=None, cmap="Greens", cbar_label=None, saveas="", size_base=6):
+    nx, ny, _ = get_nx_ny_nz(namelist)
+
+    x_axis = np.arange(nx) * namelist['domain']['horizontalGridSize']
+    y_axis = np.arange(ny) * namelist['domain']['horizontalGridSize']
+    fig, ax = plt.subplots(1, 1, subplot_kw={'aspect':'equal'}, figsize=(size_base, size_base * (float(ny / nx) - 0.1)))
+
+    try:
+        grid_mesh = ax.pcolormesh(x_axis, y_axis, field.T, cmap=plt.get_cmap(cmap), vmin=vmin, vmax=vmax)    
+    except TypeError:
+        grid_mesh = ax.pcolormesh(x_axis, y_axis, field, cmap = plt.get_cmap(cmap), vmin=vmin, vmax=vmax)
+ 
+    plt.colorbar(grid_mesh, label=cbar_label)
+    ax.set_xlabel("x [m]")
+    ax.set_ylabel("y [m]")
+
+    plt.tight_layout()
+    plt.savefig(saveas)
 
 def get_grid_from_raw_dat(namelist, file):
     nx, ny, nz = get_nx_ny_nz(namelist)
