@@ -26,9 +26,13 @@ def _main():
 
 def create_fuels(namelist):
     ff.api.set_api_key(namelist['fuels']['apiKey'])
-    with open(namelist['domain']['gis']) as raw_gis:
-        gis_info = json.load(raw_gis)
-    
+    try:
+        with open(namelist['domain']['gis']) as raw_gis:
+            gis_info = json.load(raw_gis)
+    except FileNotFoundError: 
+        with open(namelist['simulation']['saveLocation'] / namelist['domain']['gis']) as raw_gis:
+            gis_info = json.load(raw_gis)
+
     burn_unit = next(
         feature for feature in gis_info['features'] if (str.lower(feature['properties']['name']) == "burnunit" or str.lower(feature['properties']['name']) == "burn_unit")
     )

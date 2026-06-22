@@ -95,6 +95,11 @@ def check_namelist_requirements_and_fill_defaults(namelist):
                 final_namelist[section][varname] = default_vars[section][varname]
                 print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
     
+    if(not os.path.isfile(namelist['domain']['gis'])):
+        if(not os.path.isfile(final_namelist['simulation']['saveLocation'] / namelist['domain']['gis'])):
+            raise FileNotFoundError
+        else:
+            final_namelist['domain']['gis'] = final_namelist['simulation']['saveLocation'] / namelist['domain']['gis']
     final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
     return final_namelist
 
