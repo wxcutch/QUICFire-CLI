@@ -125,5 +125,17 @@ Finds all of the areas of an elevation between a range of heights above sea leve
 </ul>
 </details>
 
+<details>
+<summary><code>rectangle</code></summary>
+Wrapper for the <code>quicfire-tools</code> rectangle ignition
+<hr/>
+<ul>
+<li><code>xMin (m)</code> - X location of the southwest corner of the ignition</li>
+<li><code>yMin (m)</code> - Y location of the southwest corner of the ignition</li>
+<li><code>xLength (m)</code> - length in the x direction</li>
+<li><code>yLength (m)</code> - length in the y direction </li>
+</ul>
+</details>
+
 </details>
 </div>

@@ -20,8 +20,8 @@ def _main():
         os.mkdir(namelist['simulation']['saveLocation'])
 
     create_fuels(namelist)
-    write_ignition(namelist)
     write_qf_inputs(namelist)
+    write_ignition(namelist)
     print("simulation setup complete!")
 
 def create_fuels(namelist):
@@ -101,7 +101,10 @@ def _set_atmos_grid_height(namelist, simulation):
         print("Using quicfire-tools default vertical grid")
 
 def _rectangle_ignition(namelist):
-    pass
+    #reopen the qft class
+    simulation = qft.SimulationInputs.from_directory(namelist['simulation']['saveLocation'])
+    simulation.set_rectangle_ignition(namelist['ignition']['xMin'], namelist['ignition']['yMin'], namelist['ignition']['xLength'], namelist['ignition']['yLength'])
+    simulation.write_inputs(namelist['simulation']['saveLocation'])
 
 def _write_ignition_file(locations, timing, save_loc):
     ignition_locations = np.where(locations)
