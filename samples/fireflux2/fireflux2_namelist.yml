@@ -7,7 +7,7 @@ simulation:
   nProc: 1
 
 domain:
-  gis: barebones_domain.geojson
+  gis: fireflux_domain_and_instruments.geojson
   gisProjection: EPSG:4326
   horizontalGridSize: 2
   verticalGridSize: 1
