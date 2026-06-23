@@ -97,19 +97,33 @@ Describe the background wind conditions for your simulation. As of right now, on
 <hr/>
 
 <b> Required variables: </b> <code>mode</code> <br/>
-<b> Available modes: </b> <code>gis</code>
+<b> Available modes: </b> <code>gis</code>, <code>topography</code>, <code>rectangle</code>
 
 <details class="popout subsection">
 <summary><code>gis</code></summary>
 Finds a LineString with a property named <code>name = ignition</code> within your GeoJSON file describing your domain and instantaneously ignites the line at a specified width
-
-<div class="section-title">Variables</div>
 <hr/>
+<b>Variables</b>
+
 <ul>
 <li><code>timing = "instant"</code> - how you would like time to be handled by the ignition</li>
 <li><code>startTime (s)</code> - <code> default 1</code> The time in the simulation to start the ignition. If you are using instantaneous ignitions this will have no effect on the simulation.</li>
 <li><code>width (grid cell count)</code> - <code>default 10</code> Approximate width of the line (in grid cells) ignited from the line string</li>
 </ul>
 </details>
+
+<details class="popout subsection">
+<summary><code>topography</code></summary>
+
+Finds all of the areas of an elevation between a range of heights above sea level in meters and ignites them. 
+<hr/>
+<b>Variables</b>
+
+<ul>
+<li><code>topElevation (m)</code> - the highest point in the range you would like to ignite</li>
+<li><code>bottomElevation (m)</code> - the bottom point in the range you would like to ignite</li>
+</ul>
+</details>
+
 </details>
 </div>
