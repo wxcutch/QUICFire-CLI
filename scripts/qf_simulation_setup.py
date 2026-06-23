@@ -60,6 +60,11 @@ def write_ignition(namelist):
     if(namelist['ignition']['mode'] == 'gis'):
         ignitions, timing = _ignitions_from_gis(namelist)
         _write_ignition_file(ignitions, timing, namelist['simulation']['saveLocation'])
+    elif(namelist['igntion']['mode'] == 'topography'):
+        ignitions, timing = _ignitions_from_topography(namelist)
+        _write_ignition_file(ignitions, timing, namelist['simulation']['saveLocation'])
+    elif(namelist['ignition']['mode'] == 'rectangle'):
+        _rectangle_ignition(namelist)
     else:
         print("ERROR: only supported ignition specification is a LineString in your .geojson file defining your domain. Your ignite.dat file will be missing")
 
@@ -95,6 +100,9 @@ def _set_atmos_grid_height(namelist, simulation):
     else:
         print("Using quicfire-tools default vertical grid")
 
+def _rectangle_ignition(namelist):
+    pass
+
 def _write_ignition_file(locations, timing, save_loc):
     ignition_locations = np.where(locations)
     ignition_times = timing[ignition_locations]
@@ -113,14 +121,14 @@ def _write_ignition_file(locations, timing, save_loc):
     with open(save_loc / 'ignite.dat', 'w') as ignition_file:
         ignition_file.writelines(ignition_file_lines)
 
-def _ignitions_from_topography(namelist, nx, ny):
+def _ignitions_from_topography(namelist):
+    nx, ny, nz = get_nx_ny_nz(namelist)
     if(not os.path.exists(namelist['simulation']['saveLocation'] / 'topo.dat')):
         raise FileNotFoundError("Couldn't find the topography file to use while writing ignitions")
 
     with open(namelist['simulation']['saveLocation'] / 'topo.dat', 'rb') as f:
         pre1 = struct.unpack("i", f.read(4))[0]
         topo = np.frombuffer(f.read(nx * ny * 4), 'f').reshape((nx, ny), order='F')
-
     
     bottom = namelist['ignition']['bottomElevation']
     top = namelist['ignition']['topElevation']
