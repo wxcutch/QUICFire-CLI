@@ -79,6 +79,18 @@ surfaceConfig:
 <aside class="popout warning"><b>Warning:</b> The FastFuels SDK documentation (as of June 2026) erroneously states to set the fuel moisture using a fraction to represent the percentage. You should use the percentage out of 100 instead. </aside>
 </details>
 
+<details>
+<summary><code>idealized</code></summary>
+Uses the <code>quicfire-tools</code> uniform fuel function to equally distribute fuels across the domain
+<hr/>
+Variables (all are required)
+<ul>
+<li><code>fuelDensity (kg/m^3)</code> - bulk fuel density, fuel load normalized by the height of the fuel bed</li>
+<li><code>fuelMoisture (%)</code> - fuel moisture content</li>
+<li><code>fuelHeight (m)</code> - fuel bed height</li>
+</ul>
+</details>
+
 </details>
 
 <hr/>

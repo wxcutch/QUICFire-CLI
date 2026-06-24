@@ -25,6 +25,13 @@ def _main():
     print("simulation setup complete!")
 
 def create_fuels(namelist):
+    if(str.lower(namelist['fuels']['mode']) == 'fastfuels'):
+        create_fastfuels(namelist)
+    else:
+        print('Will create uniform fuels in the QF input file creation step')
+
+
+def create_fastfuels(namelist):
     ff.api.set_api_key(namelist['fuels']['apiKey'])
     try:
         with open(namelist['domain']['gis']) as raw_gis:
@@ -77,7 +84,12 @@ def write_qf_inputs(namelist):
                                                         wind_direction=namelist['weather']['windDirection'],
                                                         simulation_time=namelist['simulation']['duration'])
     simulation.set_output_files(**namelist['simulation']['outputs'])
-    simulation.set_custom_simulation(interpolate=True)
+    if(str.lower(namelist['fuels']['mode']) == "idealized"):
+        simulation.set_uniform_fuels(fuel_density = namelist['fuels']['fuelDensity'], 
+                                     fuel_moisture = namelist['fuels']['fuelMoisture'],
+                                     fuel_height= namelist['fuels']['fuelHeight'])
+    else:
+        simulation.set_custom_simulation(interpolate=True)
     _set_atmos_grid_height(namelist, simulation)
     simulation.runtime_advanced_user_inputs.num_cpus = namelist['simulation']['nProc']
     simulation.set_output_interval(namelist['simulation']['saveOutputFrequency'])
@@ -89,16 +101,18 @@ def _set_atmos_grid_height(namelist, simulation):
         simulation.qu_simparams.quic_domain_height = namelist['domain']['atmosDepth']
         return
     
-    topo_grid = get_grid_from_raw_dat(namelist, 'topo.dat')
-    highest_point = np.nanmax(topo_grid)
-    lowest_point = np.nanmin(topo_grid)
+    if(os.path.isfile(namelist['simulation']['saveLocation'] / 'topo.dat')):
+        topo_grid = get_grid_from_raw_dat(namelist, 'topo.dat')
+        highest_point = np.nanmax(topo_grid)
+        lowest_point = np.nanmin(topo_grid)
 
-    change = highest_point - lowest_point
-    if(change > 50):
-        print(f"Big terrain height difference, changing the atmosphere domain height to {change * 3.25}")
-        simulation.qu_simparams.quic_domain_height = change * 3.25
-    else:
-        print("Using quicfire-tools default vertical grid")
+        change = highest_point - lowest_point
+        if(change > 50):
+            print(f"Big terrain height difference, changing the atmosphere domain height to {change * 3.25}")
+            simulation.qu_simparams.quic_domain_height = change * 3.25
+        else:
+            print("Using quicfire-tools default vertical grid")
+        
 
 def _rectangle_ignition(namelist):
     #reopen the qft class

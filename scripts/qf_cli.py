@@ -10,8 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 required_vars = {'simulation': ['saveLocation', 'duration'],
-                 'domain' : ["gis"],
-                 'fuels' : ['apiKey'],
+                 'domain' : ["mode"],
+                 'fuels' : ["mode"],
                  'weather' : ['windSpeed', 'windDirection'], 
                  'ignition' : ['mode']
                  }
@@ -157,6 +157,14 @@ def get_grid_from_raw_dat(namelist, file):
     return grid
 
 def get_nx_ny_nz(namelist):
-    with open(namelist['simulation']['saveLocation'] / 'metadata.json') as raw_meta:
-        ff_meta = json.load(raw_meta)
-    return ff_meta['nx'], ff_meta['ny'], ff_meta['nz']
+    if(namelist['simulation']['saveLocation'] / 'metadata.json'):
+        with open(namelist['simulation']['saveLocation'] / 'metadata.json') as raw_meta:
+            ff_meta = json.load(raw_meta)
+        nx = ff_meta['nx']
+        ny = ff_meta['ny']
+        nz = ff_meta['nz']
+    else:
+        nx = namelist['domain']['nx']
+        ny = namelist['domain']['ny']
+        nz = namelist['domain']['nz']
+    return nx, ny, nz
