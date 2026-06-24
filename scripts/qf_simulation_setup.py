@@ -60,7 +60,7 @@ def write_ignition(namelist):
     if(namelist['ignition']['mode'] == 'gis'):
         ignitions, timing = _ignitions_from_gis(namelist)
         _write_ignition_file(ignitions, timing, namelist['simulation']['saveLocation'])
-    elif(namelist['igntion']['mode'] == 'topography'):
+    elif(namelist['ignition']['mode'] == 'topography'):
         ignitions, timing = _ignitions_from_topography(namelist)
         _write_ignition_file(ignitions, timing, namelist['simulation']['saveLocation'])
     elif(namelist['ignition']['mode'] == 'rectangle'):
@@ -77,7 +77,7 @@ def write_qf_inputs(namelist):
                                                         wind_direction=namelist['weather']['windDirection'],
                                                         simulation_time=namelist['simulation']['duration'])
     simulation.set_output_files(**namelist['simulation']['outputs'])
-    simulation.set_custom_simulation()
+    simulation.set_custom_simulation(interpolate=True)
     _set_atmos_grid_height(namelist, simulation)
     simulation.runtime_advanced_user_inputs.num_cpus = namelist['simulation']['nProc']
     simulation.set_output_interval(namelist['simulation']['saveOutputFrequency'])
