@@ -25,7 +25,7 @@ def _main():
 
     toa_masked = ds.TimeOfArrival.where(ds.TimeOfArrival != 0)
 
-    qf_cli.plot_field(namelist, toa_masked, cmap='cividis', cbar_label="Earliest Time of Arrival [s]", saveas=figure_folder / 'TimeOfArrival.png')
+    qf_cli.plot_field(namelist, toa_masked, cmap='cividis', cbar_label="Earliest Time of Arrival [s]", saveas=figure_folder / 'TimeOfArrival.png', transpose=False)
 
 
 if __name__=="__main__":

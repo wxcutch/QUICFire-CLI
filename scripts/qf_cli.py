@@ -124,17 +124,21 @@ def all_ff_present(folder):
             print(f"WARNING: {file} is missing from your input files at {folder}")
     return all_ff_present    
 
-def plot_field(namelist, field, vmin=None, vmax=None, cmap="Greens", cbar_label=None, saveas="", size_base=6):
+def plot_field(namelist, field, vmin=None, vmax=None, cmap="Greens", cbar_label=None, saveas="", size_base=6, transpose=True):
     nx, ny, _ = get_nx_ny_nz(namelist)
 
     x_axis = np.arange(nx) * namelist['domain']['horizontalGridSize']
     y_axis = np.arange(ny) * namelist['domain']['horizontalGridSize']
     fig, ax = plt.subplots(1, 1, subplot_kw={'aspect':'equal'}, figsize=(size_base, size_base * (float(ny / nx) - 0.1)))
 
-    try:
+    if(transpose == True):
         grid_mesh = ax.pcolormesh(x_axis, y_axis, field.T, cmap=plt.get_cmap(cmap), vmin=vmin, vmax=vmax)    
-    except TypeError:
-        grid_mesh = ax.pcolormesh(x_axis, y_axis, field, cmap = plt.get_cmap(cmap), vmin=vmin, vmax=vmax)
+    else:
+        try:
+            grid_mesh = ax.pcolormesh(x_axis, y_axis, field, cmap = plt.get_cmap(cmap), vmin=vmin, vmax=vmax)
+        except TypeError:
+            print("WARNING: Had to transpose the grid without being told to because array sizes were not correct")
+            grid_mesh = ax.pcolormesh(x_axis, y_axis, field.T, cmap=plt.get_cmap(cmap), vmin=vmin, vmax=vmax)
  
     plt.colorbar(grid_mesh, label=cbar_label)
     ax.set_xlabel("x [m]")
