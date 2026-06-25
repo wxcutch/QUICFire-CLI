@@ -95,7 +95,7 @@ def check_namelist_requirements_and_fill_defaults(namelist):
                 final_namelist[section][varname] = default_vars[section][varname]
                 print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
     
-    if(not os.path.isfile(namelist['domain']['gis'])):
+    if(namelist['domain']['mode'] != "idealized" and not os.path.isfile(namelist['domain']['gis'])):
         if(not os.path.isfile(final_namelist['simulation']['saveLocation'] / namelist['domain']['gis'])):
             raise FileNotFoundError
         else:
@@ -161,7 +161,7 @@ def get_grid_from_raw_dat(namelist, file):
     return grid
 
 def get_nx_ny_nz(namelist):
-    if(namelist['simulation']['saveLocation'] / 'metadata.json'):
+    if(os.path.isfile(namelist['simulation']['saveLocation'] / 'metadata.json')):
         with open(namelist['simulation']['saveLocation'] / 'metadata.json') as raw_meta:
             ff_meta = json.load(raw_meta)
         nx = ff_meta['nx']
