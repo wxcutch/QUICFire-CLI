@@ -33,7 +33,8 @@ All of the sections are required to be present in your namelist and variables/mo
 <code>gis</code>
 
 Gives information about the grid setup for the model
-
+<details>
+<summary>gis</summary>
 <b>Available variables:</b>
 <ul>
 <li><code>gis</code> - Path to your GeoJSON file for this domain. Make sure your burn unit has the property <code>"name": "BurnUnit"</code>
@@ -42,6 +43,24 @@ Gives information about the grid setup for the model
 <li><code>gisProjection</code> - <code>default "EPSG:4326"</code> The projection the GeoJSON file outlining the domain is in</li>
 <li><code>atmosDepth (m)</code> - Default is quicfire-tools default or 3.25 times the difference in terrain height if the span of the terrain height values is greater than 50m.
 </ul>
+</details>
+
+<details>
+<summary><code>idealized</code></summary>
+<ul>
+<li> <code>nx</code> - number of grid points in x (domain size will be grid spacing * nx)</li>
+
+<li> <code>ny</code> - number of grid points in y (domain size will be grid spacing * ny) </li>
+<li><code>nz</code> - number of grid points in z </li>
+
+<li><code>horizontalGridSize (m)</code> - <code>default 2</code> The size of the square grid cells in the xy plane </li>
+<li><code>verticalGridSize (m)</code> - <code>default 1</code> The size of the fire grid cells in the vertical. This is different from the atmosphere grid.</li>
+<li><code>atmosDepth (m)</code> - replace the quicfire-tools determination for this value</li>
+<li><code>terrain</code> - the type of terrain to fill the domain with. As of writing only flat terrain is supported. </li>
+
+</ul>
+</details>
+
 </details>
 
 <hr/>
