@@ -16,6 +16,10 @@ required_vars = {'simulation': ['saveLocation', 'duration'],
                  'ignition' : ['mode']
                  }
 
+required_for_mode = {"domain" : {
+    "idealized" : ["nx", "ny", "nz"]
+}}
+
 default_vars = {'simulation' : {
                     'saveOutputVariables' : ['Winds', 'Energy'],
                     "nProc" : 1,
@@ -103,9 +107,9 @@ def check_namelist_requirements_and_fill_defaults(namelist):
     final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
     return final_namelist
 
-def load_cli_namelist():
+def load_cli_namelist(allow_multiple=False):
     options = sys.argv[1:]
-    if(len(options) != 1):
+    if(len(options) != 1 and allow_multiple != True):
         print("ERROR: Please specify the simulation yaml namelist after the command") 
         exit()
 
