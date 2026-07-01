@@ -19,8 +19,8 @@ def _main():
     if not os.path.isdir(namelist['simulation']['saveLocation']):
         os.mkdir(namelist['simulation']['saveLocation'])
 
-    create_fuels(namelist)
-    write_qf_inputs(namelist)
+    # create_fuels(namelist)
+    # write_qf_inputs(namelist)
     write_ignition(namelist)
     print("simulation setup complete!")
 
@@ -165,7 +165,7 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
         snapped_y = origin_y + i * domain_y_size
         return i, j, snapped_x, snapped_y
     def _diagonal_line_ignition(existing_ignition_pattern, start_x, start_y, end_x, end_y, thickness=1):
-        print('Running diagonal line ignition')
+        print(f'Igniting from ({start_x}, {start_y}) to ({end_x}, {end_y})')
         ignition_pattern = np.copy(existing_ignition_pattern)
 
         dx = end_x - start_x
@@ -175,18 +175,20 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
             ignition_pattern[start_x - int(thickness / 2):end_x + math.ceil(thickness / 2), start_y - int(thickness / 2) : start_y + math.ceil(thickness/2)] = 1
             return ignition_pattern
 
-        slope = float(dy) / dx
+        slope = abs(float(dy) / dx)
+
+        dy = 1 if(end_y > start_y) else -1
 
         ignite_y = start_y
         ignite_x = float(start_x)
-        while(ignite_y <= end_y):
+        while(abs(ignite_y - end_y) > 1):
             if(slope > 1):
                 end_x = int(ignite_x + slope) + math.ceil(thickness / 2) - 1
             else:
                 end_x = int(ignite_x) + math.ceil(thickness/2)
             ignition_pattern[int(ignite_x - int(thickness/2)) : end_x, 
                             int(ignite_y - int(thickness /2)) : int(ignite_y + math.ceil(thickness /2))] = 1
-            ignite_y += 1
+            ignite_y += dy
             ignite_x += slope
         
         return ignition_pattern
@@ -202,6 +204,8 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
         f for f in gis_info['features'] if (str.lower(f['properties']['name']) == feature_key)
     )
 
+    print(f'found ignition feature {ignition_feature}')
+
     ff_domain = next(
         f for f in ff_gis['features'] if f['properties']['name'] == "domain"
     )
@@ -213,12 +217,18 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
     line_coords = ignition_feature['geometry']['coordinates']
     n_segments = len(line_coords) - 1
   
+    print(f"Found {n_segments} segments to ignite in the input file")
+
     ff_crs = ff_gis['crs']['properties']['name']
     user_crs = namelist['domain']['gisProjection']
 
     ff_origin_x, ff_origin_y = ff_domain['geometry']['coordinates'][0][0]
 
+    print(f"The origin of the fastfuels gis file is ({ff_origin_x}, {ff_origin_y})")
+
     nx, ny, nz = get_nx_ny_nz(namelist)
+
+    print(f"Domain is nx: {nx}, ny: {ny} with a grid size of {namelist['domain']['horizontalGridSize']}")
 
     transformer = Transformer.from_crs(user_crs, ff_crs, always_xy=True)
     ignition_line_projected = [transformer.transform(lon, lat) for lon, lat in line_coords]
