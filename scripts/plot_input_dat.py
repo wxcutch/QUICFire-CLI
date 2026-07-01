@@ -14,8 +14,8 @@ def find_ignitions(namelist, input_file):
         return ignite_mask
     
     for line in ignitions:
-        ignite_x, ignite_y, t = str.split(line, " ")
-        ignite_mask[ignite_x - 1, ignite_y - 1, :] = 1
+        ignite_x, ignite_y, t = str.split(line)
+        ignite_mask[int(ignite_x) - 1, int(ignite_y) - 1, :] = 1
     return ignite_mask
 
 namelist = qf_cli.load_cli_namelist(allow_multiple=True)
