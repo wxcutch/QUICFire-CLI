@@ -19,8 +19,8 @@ def _main():
     if not os.path.isdir(namelist['simulation']['saveLocation']):
         os.mkdir(namelist['simulation']['saveLocation'])
 
-    # create_fuels(namelist)
-    # write_qf_inputs(namelist)
+    create_fuels(namelist)
+    write_qf_inputs(namelist)
     write_ignition(namelist)
     print("simulation setup complete!")
 
