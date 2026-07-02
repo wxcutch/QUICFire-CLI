@@ -82,11 +82,11 @@ def check_namelist_requirements_and_fill_defaults(namelist):
             print(f"ERROR: Missing required namelist section {required_section}")
             final_namelist = None
         
-    for section_with_req in required_vars.keys():
-        for req_var in required_vars[section_with_req]:
-            if (req_var not in namelist[section_with_req].keys()):
-                print(f"ERROR: missing required variable {req_var} in section {section_with_req} of the namelist")
-                final_namelist = None
+    # for section_with_req in required_vars.keys():
+    #     for req_var in required_vars[section_with_req]:
+    #         if (req_var not in namelist[section_with_req].keys()):
+    #             print(f"ERROR: missing required variable {req_var} in section {section_with_req} of the namelist")
+    #             final_namelist = None
 
     if (final_namelist == None):
         return None
