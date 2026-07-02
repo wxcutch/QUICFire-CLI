@@ -11,7 +11,10 @@ import struct
 import math
 from qf_cli import *
 
+quiet = False
+
 def _main():
+    global quiet
     namelist = load_cli_namelist()
     if(namelist == None):
         exit()

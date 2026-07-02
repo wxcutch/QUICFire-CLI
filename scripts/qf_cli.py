@@ -101,7 +101,9 @@ def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
                     print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
     
     if(namelist['domain']['mode'] != "idealized" and not os.path.isfile(namelist['domain']['gis'])):
+        print(f"WARNING: failed to find the gis file from a global path, checking with save location")
         if(not os.path.isfile(final_namelist['simulation']['saveLocation'] / namelist['domain']['gis'])):
+            print(f"ERROR: couldn't find gis file {final_namelist['simulation']['saveLocation'] / namelist['domain']['gis']}")
             raise FileNotFoundError
         else:
             final_namelist['domain']['gis'] = final_namelist['simulation']['saveLocation'] / namelist['domain']['gis']
