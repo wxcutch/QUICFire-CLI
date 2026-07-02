@@ -19,10 +19,107 @@ def _main():
     if not os.path.isdir(namelist['simulation']['saveLocation']):
         os.mkdir(namelist['simulation']['saveLocation'])
 
-    create_fuels(namelist)
-    write_qf_inputs(namelist)
-    write_ignition(namelist)
+    if('ensemble' not in namelist.keys()):
+        quiet = True
+        create_fuels(namelist)
+        write_qf_inputs(namelist)
+        write_ignition(namelist)
+    else:
+        print("Ensemble mode detected, will use saveLocation as root for members")   
+        ensemble_setup(namelist)     
+
     print("simulation setup complete!")
+
+def ensemble_setup(namelist):
+    
+    def get_path_and_values(branch, established_path=[]):
+        #tunnel down to the established path
+        setting_trees = []
+        if(type(branch) == dict):
+            #we have to keep going deeper
+            for key in branch.keys():
+                new_path = copy.deepcopy(established_path) + [key]
+                children = get_path_and_values(branch[key], new_path)
+                if(len(children) > 0):
+                    setting_trees.append(children)
+        else:
+            if(type(branch) == list):
+                for ensemble_value in branch:
+                    setting_trees.append((ensemble_value, established_path))
+        return setting_trees
+        
+    def plant_namelist_value(namelist, path, value):
+        final_namelist = copy.deepcopy(namelist)
+        working_namelist = final_namelist
+        path_depth = 0
+        while(path_depth < len(path) - 1):
+            if(path[path_depth] not in working_namelist):
+                working_namelist[path[path_depth]] = {}
+            working_namelist = working_namelist[path[path_depth]]
+            path_depth += 1
+
+        working_namelist[path[-1]] = value
+        return final_namelist
+    
+    def get_last_lists(sparse_list, dtype=tuple):
+        last_lists = []
+        if(type(sparse_list[0][0]) == dtype):
+            return sparse_list
+        for branch in range(len(sparse_list)):
+            last_lists += get_last_lists(sparse_list[branch], dtype=dtype)
+        return last_lists
+    def generate_namelists(base_namelist, variable_splits, case_name_root="iter", n_random=1):
+        base_namelist = copy.deepcopy(base_namelist)
+        if('ensemble' in base_namelist.keys()):
+            base_namelist.pop('ensemble')
+        field_name = list(variable_splits.keys())[0]
+        remaining_variables = copy.deepcopy(variable_splits)
+        remaining_variables.pop(field_name)
+        for case in variable_splits[field_name]:
+            value, setting_path = case
+            namelist = plant_namelist_value(base_namelist, setting_path, value)
+            case_name = case_name_root + f"_{field_name}{value}"
+            if(len(remaining_variables.keys()) > 0):
+                generate_namelists(namelist, remaining_variables, case_name_root=case_name, n_random=n_random)
+            else:
+                if(n_random > 1):
+                    for i in range(n_random):
+                        random_seed_member_name = case_name + f"_mem{i+1:03}"
+                        member_folder = Path(base_namelist['simulation']['saveLocation'] / random_seed_member_name)
+                        namelist = plant_namelist_value(namelist, ['simulation', 'plumeRandomSeed'], i+5)
+                        namelist = plant_namelist_value(namelist, ['simulation', 'saveLocation'], str(member_folder))
+                        if not os.path.isdir(member_folder):
+                            os.mkdir(member_folder)
+                        
+                        with open(member_folder / 'namelist.yml', 'w') as outfile:
+                            yaml.dump(namelist, outfile) 
+                else:
+                    member_folder = Path(base_namelist['simulation']['saveLocation'] / case_name)
+                    namelist = plant_namelist_value(namelist, ['simulation', 'saveLocation'], str(member_folder))
+                    if not os.path.isdir(member_folder):
+                        os.mkdir(member_folder)
+                    with open(member_folder / 'namelist.yml', 'w') as outfile:
+                        yaml.dump(namelist, outfile) 
+    ensemble_namelist = namelist['ensemble']
+    deg_of_freedom = get_path_and_values(ensemble_namelist)
+    var_splits = get_last_lists(deg_of_freedom)
+    named_splits = {}
+    for var_set in var_splits:
+        title = f"{var_set[0][1][-2]}-{var_set[0][1][-1]}"
+        named_splits[title] = var_set
+
+    generate_namelists(base_namelist=namelist, variable_splits=named_splits, n_random = ensemble_namelist['randomSeedMembers'])
+    members = os.listdir(namelist['simulation']['saveLocation'])
+    members.sort()
+    for member in members:
+        mem_namelist_loc = Path(namelist['simulation']['saveLocation'] / member) / 'namelist.yml'
+        print(mem_namelist_loc)
+        with open(mem_namelist_loc, 'r') as buffer:
+            mem_namelist = yaml.load(buffer, Loader=yaml.FullLoader)
+        mem_namelist = check_namelist_requirements_and_fill_defaults(mem_namelist, quiet=True)
+        create_fuels(mem_namelist)
+        write_qf_inputs(mem_namelist)
+        write_ignition(mem_namelist)
 
 def create_fuels(namelist):
     if(str.lower(namelist['fuels']['mode']) == 'fastfuels'):
@@ -94,8 +191,11 @@ def write_qf_inputs(namelist):
     simulation.runtime_advanced_user_inputs.num_cpus = namelist['simulation']['nProc']
     simulation.set_output_interval(namelist['simulation']['saveOutputFrequency'])
     simulation.write_inputs(namelist['simulation']['saveLocation'])
+    if('plumeRandomSeed' in namelist['simulation']):
+        simulation.quic_fire.random_seed = namelist['simulation']['plumeRandomSeed']
 
 def _set_atmos_grid_height(namelist, simulation):
+    global quiet
     #check to see if the user went ahead and specified 
     if('atmosDepth' in namelist['domain'].keys()):
         simulation.qu_simparams.quic_domain_height = namelist['domain']['atmosDepth']
@@ -108,10 +208,12 @@ def _set_atmos_grid_height(namelist, simulation):
 
         change = highest_point - lowest_point
         if(change > 50):
-            print(f"Big terrain height difference, changing the atmosphere domain height to {change * 3.25}")
+            if(quiet == False):
+                print(f"Big terrain height difference, changing the atmosphere domain height to {change * 3.25}")
             simulation.qu_simparams.quic_domain_height = change * 3.25
         else:
-            print("Using quicfire-tools default vertical grid")
+            if(quiet == False):
+                print("Using quicfire-tools default vertical grid")
         
 
 def _rectangle_ignition(namelist):
@@ -156,6 +258,7 @@ def _ignitions_from_topography(namelist):
     _write_ignition_file(ignition_locations, timing, namelist['saveLocation'])
 
 def _ignitions_from_gis(namelist, feature_key='ignition'):
+    global quiet
     from pyproj import Transformer
 
     def _snap_to_grid(x, y, origin_x, origin_y, domain_x_size, domain_y_size):
@@ -165,7 +268,8 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
         snapped_y = origin_y + i * domain_y_size
         return i, j, snapped_x, snapped_y
     def _diagonal_line_ignition(existing_ignition_pattern, start_x, start_y, end_x, end_y, thickness=1):
-        print(f'Igniting from ({start_x}, {start_y}) to ({end_x}, {end_y})')
+        if(quiet == False):
+            print(f'Igniting from ({start_x}, {start_y}) to ({end_x}, {end_y})')
         ignition_pattern = np.copy(existing_ignition_pattern)
 
         dx = end_x - start_x
@@ -204,7 +308,8 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
         f for f in gis_info['features'] if (str.lower(f['properties']['name']) == feature_key)
     )
 
-    print(f'found ignition feature {ignition_feature}')
+    if(quiet == False):
+        print(f'found ignition feature {ignition_feature}')
 
     ff_domain = next(
         f for f in ff_gis['features'] if f['properties']['name'] == "domain"
@@ -216,19 +321,22 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
     
     line_coords = ignition_feature['geometry']['coordinates']
     n_segments = len(line_coords) - 1
-  
-    print(f"Found {n_segments} segments to ignite in the input file")
+
+    if(quiet == False):
+        print(f"Found {n_segments} segments to ignite in the input file")
 
     ff_crs = ff_gis['crs']['properties']['name']
     user_crs = namelist['domain']['gisProjection']
 
     ff_origin_x, ff_origin_y = ff_domain['geometry']['coordinates'][0][0]
 
-    print(f"The origin of the fastfuels gis file is ({ff_origin_x}, {ff_origin_y})")
+    if(quiet == False):
+        print(f"The origin of the fastfuels gis file is ({ff_origin_x}, {ff_origin_y})")
 
     nx, ny, nz = get_nx_ny_nz(namelist)
 
-    print(f"Domain is nx: {nx}, ny: {ny} with a grid size of {namelist['domain']['horizontalGridSize']}")
+    if(quiet == False):
+        print(f"Domain is nx: {nx}, ny: {ny} with a grid size of {namelist['domain']['horizontalGridSize']}")
 
     transformer = Transformer.from_crs(user_crs, ff_crs, always_xy=True)
     ignition_line_projected = [transformer.transform(lon, lat) for lon, lat in line_coords]

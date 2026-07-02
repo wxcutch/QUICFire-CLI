@@ -41,7 +41,7 @@ ff_files = ['topo.dat', 'treesfueldepth.dat', 'treesmoist.dat', 'treesrhof.dat']
 ff_fancy_names = {'topo.dat' : 'Topography [m ASL]', 'treesfueldepth.dat' : "Surface Fuel Depth [m]", 
                   'treesmoist.dat' : "Fuel Moisture [g H2O / g Fuel]", 'treesrhof.dat' : r"Fuel Bulk Density [$kg\ m^{-3}$]"}
 
-def check_namelist_requirements_and_fill_defaults(namelist):
+def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
     global required_vars, required_namelist_sections, default_vars
 
     def _handle_output_vars(varlist):
@@ -63,7 +63,7 @@ def check_namelist_requirements_and_fill_defaults(namelist):
         for requested_output_var in varlist:
             if(requested_output_var in qf_outputs.keys()):
                 qf_outputs[requested_output_var] = True
-            elif(requested_output_var != 'Winds' and requested_output_var != "Energy"):
+            elif(requested_output_var != 'Winds' and requested_output_var != "Energy" and quiet==False):
                 print(f"WARNING: Did not recognize requested output variable {requested_output_var}")
         
         if('Winds' in varlist):
@@ -97,7 +97,8 @@ def check_namelist_requirements_and_fill_defaults(namelist):
         for varname in default_vars[section].keys():
             if(varname not in namelist[section].keys()):
                 final_namelist[section][varname] = default_vars[section][varname]
-                print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
+                if(quiet == False):
+                    print(f"WARNING: setting {varname} in {section} to default value: {default_vars[section][varname]}")
     
     if(namelist['domain']['mode'] != "idealized" and not os.path.isfile(namelist['domain']['gis'])):
         if(not os.path.isfile(final_namelist['simulation']['saveLocation'] / namelist['domain']['gis'])):
@@ -107,9 +108,9 @@ def check_namelist_requirements_and_fill_defaults(namelist):
     final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
     return final_namelist
 
-def load_cli_namelist(allow_multiple=False):
+def load_cli_namelist(allow_multiple_files=False):
     options = sys.argv[1:]
-    if(len(options) != 1 and allow_multiple != True):
+    if(len(options) != 1 and allow_multiple_files != True):
         print("ERROR: Please specify the simulation yaml namelist after the command") 
         exit()
 
