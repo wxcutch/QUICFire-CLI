@@ -170,3 +170,24 @@ Wrapper for the <code>quicfire-tools</code> rectangle ignition
 
 </details>
 </div>
+
+# Ensemble Mode
+
+You can use a namelist to generate a set of ensemble input decks by adding an `ensemble` section. Underneath this, you add a section for each section of the namelist that has an ensembled variable, and put the variable underneath as if you were putting it in the fixed section of the namelist. Ensemble will override any of the fields you put elsewhere in the namelist. You can also add a `randomSeedMembers` field for the number of members you would like to have the same input decks for but have a different random seed in the internal QUIC-Fire model plume merging scheme. Format the variables you would like as YAML arrays. For example, if one were to do an ensemble for wind speeds of 2 m/s and 10 m/s with 5 random seeds for each case, the ensemble section of the namelist would look like:
+
+```
+ensemble:
+    randomSeedMembers: 5
+    weather:
+        windSpeed: [2, 10]
+```
+
+This would give you 10 members overall. 
+
+For more complicated inputs like surface fuel moisture using FastFuels, add sections down to the level of ensemble variables like as shown below. 
+```
+ensemble:
+    fuels:
+        surfaceConfig:
+            fuelMoisture: [3, 5, 8]
+```
