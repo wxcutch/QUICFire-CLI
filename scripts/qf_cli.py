@@ -110,13 +110,16 @@ def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
     final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
     return final_namelist
 
-def load_cli_namelist(allow_multiple_files=False):
-    options = sys.argv[1:]
-    if(len(options) != 1 and allow_multiple_files != True):
-        print("ERROR: Please specify the simulation yaml namelist after the command") 
-        exit()
+def load_cli_namelist(allow_multiple_files=False, from_file=None):
+    raw_file = from_file
+    if(from_file == None):
+        options = sys.argv[1:]
+        if(len(options) != 1 and allow_multiple_files != True):
+            print("ERROR: Please specify the simulation yaml namelist after the command") 
+            exit()
+        raw_file = options[0]
 
-    with open(options[0], 'r') as raw_namelist:
+    with open(raw_file, 'r') as raw_namelist:
         namelist = yaml.load(raw_namelist, Loader=yaml.FullLoader)
     
     namelist = check_namelist_requirements_and_fill_defaults(namelist)
