@@ -18,7 +18,7 @@ def find_ignitions(namelist, input_file):
         ignite_mask[int(ignite_x) - 1, int(ignite_y) - 1, :] = 1
     return ignite_mask
 
-namelist = qf_cli.load_cli_namelist(allow_multiple=True)
+namelist = qf_cli.load_cli_namelist(allow_multiple_files=True)
 if(len(sys.argv[1:]) != 2 or "-h" in sys.argv[1:]):
     print('Please put name of the input file you wish to plot after the namelist')
 

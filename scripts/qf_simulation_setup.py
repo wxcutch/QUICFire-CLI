@@ -9,6 +9,7 @@ import copy
 import numpy as np
 import struct
 import math
+import shutil
 from qf_cli import *
 
 quiet = False
@@ -71,6 +72,14 @@ def ensemble_setup(namelist):
         for branch in range(len(sparse_list)):
             last_lists += get_last_lists(sparse_list[branch], dtype=dtype)
         return last_lists
+    
+    def find_existing_fastfuels_path(mem_namelist, completed_namelists):
+        for nml in completed_namelists:
+            other_nml = load_cli_namelist(from_file=nml)
+            if(mem_namelist['fuels'] == other_nml['fuels']):
+                return other_nml['simulation']['saveLocation']
+        return None
+
     def generate_namelists(base_namelist, variable_splits, case_name_root="iter", n_random=1):
         base_namelist = copy.deepcopy(base_namelist)
         if('ensemble' in base_namelist.keys()):
@@ -114,15 +123,25 @@ def ensemble_setup(namelist):
     generate_namelists(base_namelist=namelist, variable_splits=named_splits, n_random = ensemble_namelist['randomSeedMembers'])
     members = os.listdir(namelist['simulation']['saveLocation'])
     members.sort()
+    completed_namelists = []
     for member in members:
         mem_namelist_loc = Path(namelist['simulation']['saveLocation'] / member) / 'namelist.yml'
         print(mem_namelist_loc)
         with open(mem_namelist_loc, 'r') as buffer:
             mem_namelist = yaml.load(buffer, Loader=yaml.FullLoader)
         mem_namelist = check_namelist_requirements_and_fill_defaults(mem_namelist, quiet=True)
-        create_fuels(mem_namelist)
+        if(namelist['fuels']['mode'] == 'fastfuels'):
+            ff_path = find_existing_fastfuels_path(mem_namelist, completed_namelists)
+            if(ff_path == None):
+                create_fuels(mem_namelist)
+            else:
+                print(f'Copying FastFuels from {ff_path}')
+                for ff_file in ff_files:
+                    shutil.copy(ff_path / ff_file, Path(namelist['simulation']['saveLocation'] / member) / ff_file)
+
         write_qf_inputs(mem_namelist)
         write_ignition(mem_namelist)
+        completed_namelists.append(mem_namelist_loc)
 
 def create_fuels(namelist):
     if(str.lower(namelist['fuels']['mode']) == 'fastfuels'):
@@ -155,7 +174,7 @@ def create_fastfuels(namelist):
     ff.export_roi(roi = roi, export_path = namelist['simulation']['saveLocation'] / 'qf_fastfuels.zip', verbose=True, export_format="QUIC-Fire",
                     topography_config= None if "topographyConfig" not in available_fuels_options else namelist['fuels']['topographyConfig'],
                     surface_config= None if "surfaceConfig" not in available_fuels_options else namelist['fuels']['surfaceConfig'],
-                    tree_cong= None if "treeConfig" not in available_fuels_options else namelist['fuels']['treeConfig'],
+                    tree_config= None if "treeConfig" not in available_fuels_options else namelist['fuels']['treeConfig'],
                     features_config= None if "featuresConfig" not in available_fuels_options else namelist['fuels']['featuresConfig'],
                     tree_inventory_config= None if "treeInventoryConfig" not in available_fuels_options else namelist['fuels']['treeInventoryConfig'],
                   )

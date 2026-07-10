@@ -8,6 +8,7 @@ import copy
 import struct
 import numpy as np
 import matplotlib.pyplot as plt
+import psutil
 
 required_vars = {'simulation': ['saveLocation', 'duration'],
                  'domain' : ["mode"],
@@ -23,7 +24,7 @@ required_for_mode = {"domain" : {
 default_vars = {'simulation' : {
                     'saveOutputVariables' : ['Winds', 'Energy'],
                     "nProc" : 1,
-                    'saveOutputFrequency' : 300
+                    'saveOutputFrequency' : 300,
                 },
                 'domain' : {
                     'horizontalGridSize' : 2, 
@@ -37,7 +38,7 @@ default_vars = {'simulation' : {
 required_namelist_sections = ['simulation', 'domain', 'fuels', 'weather', 'ignition']
 
 FASTFUELS_DTYPE_SIZE_BYTES = 4
-ff_files = ['topo.dat', 'treesfueldepth.dat', 'treesmoist.dat', 'treesrhof.dat']
+ff_files = ['topo.dat', 'treesfueldepth.dat', 'treesmoist.dat', 'treesrhof.dat', 'metadata.json', 'domain.geojson']
 ff_fancy_names = {'topo.dat' : 'Topography [m ASL]', 'treesfueldepth.dat' : "Surface Fuel Depth [m]", 
                   'treesmoist.dat' : "Fuel Moisture [g H2O / g Fuel]", 'treesrhof.dat' : r"Fuel Bulk Density [$kg\ m^{-3}$]"}
 
@@ -92,7 +93,6 @@ def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
         return None
 
     final_namelist['simulation']['saveLocation'] = Path(namelist['simulation']['saveLocation'])
-
     for section in default_vars.keys():
         for varname in default_vars[section].keys():
             if(varname not in namelist[section].keys()):
@@ -108,6 +108,11 @@ def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
         else:
             final_namelist['domain']['gis'] = final_namelist['simulation']['saveLocation'] / namelist['domain']['gis']
     final_namelist['simulation']['outputs'] = _handle_output_vars(final_namelist['simulation']['saveOutputVariables'])
+
+    if('maxParallelExecute' not in final_namelist['simulation']):
+        n_cores = psutil.cpu_count(logical=False)
+        n_members = int((n_cores - 2) / final_namelist['simulation']['nProc'])
+        print(f"WARNING: the maximum number of members to execute was not specified. Detected {n_cores} physical cores on your device, I will leave 2 for background process execution. Given that you requested {final_namelist['simulation']['nProc']} threads per member, maximum number of members to execute simultaneously was set to {n_members}. Please watch your memory as this executes, if you exceed your memory allocation there may be considerable slowdowns in execution time.")
     return final_namelist
 
 def load_cli_namelist(allow_multiple_files=False, from_file=None):
