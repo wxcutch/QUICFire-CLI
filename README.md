@@ -139,7 +139,7 @@ Finds a LineString with a property named <code>name = ignition</code> within you
 <ul>
 <li><code>timing = "instant"</code> - how you would like time to be handled by the ignition</li>
 <li><code>startTime (s)</code> - <code> default 1</code> The time in the simulation to start the ignition. If you are using instantaneous ignitions this will have no effect on the simulation.</li>
-<li><code>width (grid cell count)</code> - <code>default 10</code> Approximate width of the line (in grid cells) ignited from the line string</li>
+<li><code>width (grid cell count)</code> - <code>default 2</code> Approximate width of the line (in grid cells) ignited from the line string</li>
 </ul>
 </details>
 

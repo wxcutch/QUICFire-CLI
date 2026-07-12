@@ -33,7 +33,7 @@ default_vars = {'simulation' : {
                 },
                 'fuels' : {},
                 'weather' : {'obHeight' : 6},
-                'ignition' : {'mode':'gis', 'timing':'instant', 'width':10, 'startTime' : 1}}
+                'ignition' : {'mode':'gis', 'timing':'instant', 'width':2, 'startTime' : 1}}
 
 required_namelist_sections = ['simulation', 'domain', 'fuels', 'weather', 'ignition']
 
@@ -112,7 +112,8 @@ def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
     if('maxParallelExecute' not in final_namelist['simulation']):
         n_cores = psutil.cpu_count(logical=False)
         n_members = int((n_cores - 2) / final_namelist['simulation']['nProc'])
-        print(f"WARNING: the maximum number of members to execute was not specified. Detected {n_cores} physical cores on your device, I will leave 2 for background process execution. Given that you requested {final_namelist['simulation']['nProc']} threads per member, maximum number of members to execute simultaneously was set to {n_members}. Please watch your memory as this executes, if you exceed your memory allocation there may be considerable slowdowns in execution time.")
+        if(quiet == False):
+            print(f"WARNING: the maximum number of members to execute was not specified. Detected {n_cores} physical cores on your device, I will leave 2 for background process execution. Given that you requested {final_namelist['simulation']['nProc']} threads per member, maximum number of members to execute simultaneously was set to {n_members}. Please watch your memory as this executes, if you exceed your memory allocation there may be considerable slowdowns in execution time.")
     return final_namelist
 
 def load_cli_namelist(allow_multiple_files=False, from_file=None):

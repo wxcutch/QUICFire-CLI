@@ -98,6 +98,7 @@ def ensemble_setup(namelist):
                     for i in range(n_random):
                         random_seed_member_name = case_name + f"_mem{i+1:03}"
                         member_folder = Path(base_namelist['simulation']['saveLocation'] / random_seed_member_name)
+                        print(f"Creating member at {str(member_folder)}")
                         namelist = plant_namelist_value(namelist, ['simulation', 'plumeRandomSeed'], i+5)
                         namelist = plant_namelist_value(namelist, ['simulation', 'saveLocation'], str(member_folder))
                         if not os.path.isdir(member_folder):
@@ -107,6 +108,7 @@ def ensemble_setup(namelist):
                             yaml.dump(namelist, outfile) 
                 else:
                     member_folder = Path(base_namelist['simulation']['saveLocation'] / case_name)
+                    print(f"Creating member at {str(member_folder)}")
                     namelist = plant_namelist_value(namelist, ['simulation', 'saveLocation'], str(member_folder))
                     if not os.path.isdir(member_folder):
                         os.mkdir(member_folder)
@@ -125,23 +127,24 @@ def ensemble_setup(namelist):
     members.sort()
     completed_namelists = []
     for member in members:
-        mem_namelist_loc = Path(namelist['simulation']['saveLocation'] / member) / 'namelist.yml'
-        print(mem_namelist_loc)
-        with open(mem_namelist_loc, 'r') as buffer:
-            mem_namelist = yaml.load(buffer, Loader=yaml.FullLoader)
-        mem_namelist = check_namelist_requirements_and_fill_defaults(mem_namelist, quiet=True)
-        if(namelist['fuels']['mode'] == 'fastfuels'):
-            ff_path = find_existing_fastfuels_path(mem_namelist, completed_namelists)
-            if(ff_path == None):
-                create_fuels(mem_namelist)
-            else:
-                print(f'Copying FastFuels from {ff_path}')
-                for ff_file in ff_files:
-                    shutil.copy(ff_path / ff_file, Path(namelist['simulation']['saveLocation'] / member) / ff_file)
+        if(os.path.isdir(member)):
+            mem_namelist_loc = Path(namelist['simulation']['saveLocation'] / member) / 'namelist.yml'
+            print(mem_namelist_loc)
+            with open(mem_namelist_loc, 'r') as buffer:
+                mem_namelist = yaml.load(buffer, Loader=yaml.FullLoader)
+            mem_namelist = check_namelist_requirements_and_fill_defaults(mem_namelist, quiet=True)
+            if(namelist['fuels']['mode'] == 'fastfuels'):
+                ff_path = find_existing_fastfuels_path(mem_namelist, completed_namelists)
+                if(ff_path == None):
+                    create_fuels(mem_namelist)
+                else:
+                    print(f'Copying FastFuels from {ff_path}')
+                    for ff_file in ff_files:
+                        shutil.copy(ff_path / ff_file, Path(namelist['simulation']['saveLocation'] / member) / ff_file)
 
-        write_qf_inputs(mem_namelist)
-        write_ignition(mem_namelist)
-        completed_namelists.append(mem_namelist_loc)
+            write_qf_inputs(mem_namelist)
+            write_ignition(mem_namelist)
+            completed_namelists.append(mem_namelist_loc)
 
 def create_fuels(namelist):
     if(str.lower(namelist['fuels']['mode']) == 'fastfuels'):
@@ -184,7 +187,8 @@ def create_fastfuels(namelist):
 
 def write_ignition(namelist):
     if(namelist['ignition']['mode'] == 'gis'):
-        ignitions, timing = _ignitions_from_gis(namelist)
+        ignitions_key = namelist['ignition']['name'] if 'name' in namelist['ignition'].keys() else "ignition"
+        ignitions, timing = _ignitions_from_gis(namelist, feature_key=ignitions_key)
         _write_ignition_file(ignitions, timing, namelist['simulation']['saveLocation'])
     elif(namelist['ignition']['mode'] == 'topography'):
         ignitions, timing = _ignitions_from_topography(namelist)
@@ -301,8 +305,7 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
             ignition_pattern[start_x - int(thickness / 2):end_x + math.ceil(thickness / 2), start_y - int(thickness / 2) : start_y + math.ceil(thickness/2)] = 1
             return ignition_pattern
 
-        slope = abs(float(dy) / dx)
-
+        slope = abs(dx / float(dy))        
         dy = 1 if(end_y > start_y) else -1
 
         ignite_y = start_y
@@ -325,9 +328,9 @@ def _ignitions_from_gis(namelist, feature_key='ignition'):
     
     with open(simulation_folder / 'domain.geojson', 'r') as fastfuels_domain_response:
         ff_gis = json.load(fastfuels_domain_response)
-
+    print(f'looking for ignition feature {feature_key}')
     ignition_feature = next(
-        f for f in gis_info['features'] if (str.lower(f['properties']['name']) == feature_key)
+        f for f in gis_info['features'] if (str.lower(f['properties']['name']) == str.lower(feature_key))
     )
 
     if(quiet == False):

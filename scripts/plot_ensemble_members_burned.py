@@ -50,6 +50,7 @@ def _main():
 def accumulate_nburnt(members, nx, ny):
     nburnt = np.zeros((ny, nx))
     for member in members:
+        print(f"aggregating {member}")
         inputs = qft.SimulationInputs.from_directory(member)
         outputs = qft.SimulationOutputs.from_simulation_inputs(member / 'Output', inputs)
         
