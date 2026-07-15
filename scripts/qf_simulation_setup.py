@@ -90,7 +90,7 @@ def ensemble_setup(namelist):
         for case in variable_splits[field_name]:
             value, setting_path = case
             namelist = plant_namelist_value(base_namelist, setting_path, value)
-            case_name = case_name_root + f"_{field_name}{value}"
+            case_name = case_name_root + f"_{field_name}{value:03}"
             if(len(remaining_variables.keys()) > 0):
                 generate_namelists(namelist, remaining_variables, case_name_root=case_name, n_random=n_random)
             else:

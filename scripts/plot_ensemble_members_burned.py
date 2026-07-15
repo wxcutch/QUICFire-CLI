@@ -21,7 +21,7 @@ def _main():
             for member in candidate_members:
                 if(token in str(member)):
                     members.append(member)
-                    candidate_members.remove(member)
+                    
     if(len(members) == 0):
         print("ERROR: couldn't find members to run the script with")
         exit()
