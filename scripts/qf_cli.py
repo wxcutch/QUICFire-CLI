@@ -42,6 +42,12 @@ ff_files = ['topo.dat', 'treesfueldepth.dat', 'treesmoist.dat', 'treesrhof.dat',
 ff_fancy_names = {'topo.dat' : 'Topography [m ASL]', 'treesfueldepth.dat' : "Surface Fuel Depth [m]", 
                   'treesmoist.dat' : "Fuel Moisture [g H2O / g Fuel]", 'treesrhof.dat' : r"Fuel Bulk Density [$kg\ m^{-3}$]"}
 
+def load_qft_inputs_outputs(namelist):
+    member_loc = namelist['simulation']['saveLocation']
+    inputs = qft.SimulationInputs.from_directory(member_loc)
+    outputs = qft.SimulationOutputs.from_simulation_inputs(member_loc / 'Output', inputs)
+    return inputs, outputs
+
 def check_namelist_requirements_and_fill_defaults(namelist, quiet=False):
     global required_vars, required_namelist_sections, default_vars
 
@@ -188,3 +194,23 @@ def get_nx_ny_nz(namelist):
         ny = namelist['domain']['ny']
         nz = namelist['domain']['nz']
     return nx, ny, nz
+
+def find_ignitions(namelist, input_file):
+    nx, ny, nz = get_nx_ny_nz(namelist)
+    ignite_mask = np.zeros((nx, ny, 1))
+    
+    try:
+        with open(input_file, 'r') as buffer:
+            ignition_file_lines = buffer.readlines()
+    except FileNotFoundError:
+        with open(namelist['simulation']['saveLocation'] / input_file, 'r') as buffer:
+            ignition_file_lines = buffer.readlines()
+
+    ignitions = ignition_file_lines[6:] #throwing out the header
+    if(len(ignitions) < 1):
+        return ignite_mask
+    
+    for line in ignitions:
+        ignite_x, ignite_y, t = str.split(line)
+        ignite_mask[int(ignite_x) - 1, int(ignite_y) - 1, :] = 1
+    return ignite_mask

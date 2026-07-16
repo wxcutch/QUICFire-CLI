@@ -1,7 +1,6 @@
 import qf_cli
 import numpy as np
 import matplotlib.pyplot as plt
-from plot_input_dat import find_ignitions
 
 def _main():
     namelist = qf_cli.load_cli_namelist()
@@ -13,7 +12,7 @@ def _main():
     #shade areas with 0 fuels in gray
     fuel_density = qf_cli.get_grid_from_raw_dat(namelist, input_locations / 'treesrhof.dat')
     #add ignitions on top
-    ignition = find_ignitions(namelist, input_locations/'ignite.dat')
+    ignition = qf_cli.find_ignitions(namelist, input_locations/'ignite.dat')
 
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'aspect':'equal'})
     nx, ny, nz = qf_cli.get_nx_ny_nz(namelist)
