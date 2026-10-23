@@ -2,7 +2,7 @@ import qf_cli
 from pathlib import Path
 import quicfire_tools as qft
 import os
-import netCDF4 as nc
+import xarray as xr
 
 def _main():
     namelist = qf_cli.load_cli_namelist()
@@ -18,7 +18,9 @@ def _main():
     output_vars = outputs.list_outputs()
     
     for var in output_vars:
-        full_grid = outputs.get_output(var).to_netcdf(nc_loc)
+        dask_array = outputs.to_dask(var)
+        xr.DataArray(dask_array, dims=['t', 'z', 'y', 'x'])\
+            .to_netcdf(nc_loc / f'{var}.nc')
     print(f"Finished writing outputs to netcdf at {nc_loc}")
             
 
